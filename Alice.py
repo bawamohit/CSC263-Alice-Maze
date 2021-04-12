@@ -142,15 +142,19 @@ def find_shortest_path(s: int, dim: int, arrow_colors: List[str],
 
 
 if __name__ == "__main__":
-    print(sys.argv[1])
     graph = build_graph(sys.argv[1])
-    print(graph[0])
-    print(graph[1])
-    print(graph[2])
     result = find_shortest_path(6, graph[0], graph[1], graph[2])
+
     if result is None:
         print("No solution found")
     else:
-        print(result[0])
-        print(result[1])
-        print(result[2])
+        print("The Alice Maze was solved in " + str(result[1]) + " steps.")
+
+        sequence = [result[0]]
+        vertex = result[0]
+        while result[2][vertex] is not None:
+            sequence.insert(0, result[2][vertex])
+            vertex = result[2][vertex]
+
+        print("Sequence of operations:")
+        print(sequence)
