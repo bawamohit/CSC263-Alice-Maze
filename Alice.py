@@ -42,7 +42,7 @@ def build_graph(maze_file: str) -> Tuple[int, List[str], List[List[str]]]:
     return dimension, arrow_colors, adjacency_list
 
 
-def is_valid_edge(position: int, d: int, step_size: int,
+def is_valid_edge(position: int, d: str, step_size: int,
                   dim: int) -> bool:
     """A constant time function that determines if there is a vertex step_size
     distance from position in the direction d.
@@ -69,7 +69,7 @@ def is_valid_edge(position: int, d: int, step_size: int,
     return True
 
 
-def find_position(position: int, d: int, step_size: int, dim: int) -> int:
+def find_position(position: int, d: str, step_size: int, dim: int) -> int:
     """A constant time function that determines the position of a vertex
     step_size distance from position in the direction d.
     """
@@ -93,51 +93,60 @@ def find_position(position: int, d: int, step_size: int, dim: int) -> int:
 
 def find_shortest_path(s: int, dim: int, arrow_colors: List[str],
                        adjacency_list: List[List[str]]) \
-        -> Optional[Tuple[int, int, List[int]]]:
+        -> Optional[Tuple[int, int, int, List[List[int]]]]:
     """Uses modified breadth first search algorithm to solve the Alice Maze
      of size dim x dim specified by arrow_colors and adjacency_list
     """
     num_vertices = dim * dim
 
-    colors = []
     distances = []
+    was_visited = []
     parents = []
 
     for i in range(num_vertices):
-        colors.append('W')
         distances.append(None)  # In this implementation, None means infinity
-        parents.append(None)
+
+        was_visited.append([])
+        parents.append([])
+        for j in range(dim):
+            was_visited[i].append(0)
+            parents[i].append(None)
 
         if arrow_colors[i] == 'S':
             s = i
 
-    colors[s] = 'G'
+    was_visited[s][1] = 1  # Stores that s was visited when step_count was 1
     distances[s] = 0
 
     queue = [(s, 1)]
-    while len(queue) != 0:
+    while len(queue) != 0:  # Checks if queue is empty
         item = queue.pop(0)
         u = item[0]
         step_size = item[1]
-        for direction in adjacency_list[u]:
-            if is_valid_edge(u, direction, step_size, dim):
-                v = find_position(u, direction, step_size, dim)
 
-                if colors[v] == 'W':
-                    colors[v] = 'G'
-                    distances[v] = distances[u] + 1
-                    parents[v] = u
+        if arrow_colors[u] == 'R':
+            new_step_size = step_size + 1
+        elif arrow_colors[u] == 'Y':
+            new_step_size = step_size - 1
+        else:
+            new_step_size = step_size
 
-                    if arrow_colors[v] == 'G':
-                        return v, distances[v], parents
-                    elif arrow_colors[v] == 'R':
-                        queue.append((v, step_size + 1))
-                    elif arrow_colors[v] == 'Y':
-                        queue.append((v, step_size - 1))
-                    else:
-                        queue.append((v, step_size))
-        colors[u] = 'B'
+        if 0 < new_step_size < dim:
+            for direction in adjacency_list[u]:
+                if is_valid_edge(u, direction, new_step_size, dim):
+                    v = find_position(u, direction, new_step_size, dim)
 
+                    if was_visited[v][new_step_size] == 0 and \
+                            arrow_colors[v] != 'W':
+
+                        was_visited[v][new_step_size] = 1
+                        distances[v] = distances[u] + 1
+                        parents[v][new_step_size] = (u, step_size)
+
+                        if arrow_colors[v] == 'G':
+                            return distances[v], v, new_step_size, parents
+
+                        queue.append((v, new_step_size))
     return None
 
 
@@ -148,13 +157,18 @@ if __name__ == "__main__":
     if result is None:
         print("No solution found")
     else:
-        print("The Alice Maze was solved in " + str(result[1]) + " steps.")
+        steps = result[0]
+        final_vertex = result[1]
+        final_step_size = result[2]
+        tree = result[3]
 
-        sequence = [result[0]]
-        vertex = result[0]
-        while result[2][vertex] is not None:
-            sequence.insert(0, result[2][vertex])
-            vertex = result[2][vertex]
+        print("The Alice Maze was solved in " + str(steps) + " steps.")
 
-        print("Sequence of operations:")
+        sequence = [final_vertex]
+        previous_vertex = tree[final_vertex][final_step_size]
+        while previous_vertex is not None:
+            sequence.insert(0, previous_vertex[0])
+            previous_vertex = tree[previous_vertex[0]][previous_vertex[1]]
+
+        print("Sequence of vertices: ")
         print(sequence)
