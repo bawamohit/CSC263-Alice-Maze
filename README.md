@@ -6,7 +6,7 @@ An Alice Maze is a logic puzzle created by Robbert Abbott. You can read more abo
 
 ![Example](AliceMazePicture.jpg)
 
-In this puzzle, the goal is to navigate along the squares in the specified directions to real the goal, but there are two rules.
+Starting at the red square, the goal of this puzzle is to navigate along the squares in the specified directions to real the goal, but there are two rules.
 
 Whenever you land on a square with red arrows, your step size increments, allowing you to jump over squares.
 
